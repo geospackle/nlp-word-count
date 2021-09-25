@@ -17,7 +17,7 @@ def read_file(file_path: str, cb: Callable) -> Any:
 
 def work_on_files(folder_path: str, file_extension: str, cb: Callable) -> Any:
     res = None
-    for file_path in glob.glob(f"{folder_path}/*.{file_extension}"):
+    for file_path in glob.glob(f"{folder_path}/**/*.{file_extension}"):
         res = read_file(file_path, cb)
     return res
 
@@ -107,7 +107,7 @@ def make_dataframe(top_counts_dict: dict, no_sentences: int):
 # needs a more extensive list, added some for this excercise
 stopwords = nltk.corpus.stopwords.words("english")
 stopwords = stopwords + ["", "us", "many", "one", "let", "would", "u"]
-docs_dir = "downloads/test_docs"
+docs_dir = "downloads"
 
 
 def make_dict():
