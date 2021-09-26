@@ -9,14 +9,14 @@ import pandas as pd
 nltk.download("stopwords")
 
 
-# files to dictionary
+# make dictionary of files
 def _make_dict():
     txt_dict = {}
 
     def to_dict(f) -> dict:
         nonlocal txt_dict
         file_name = os.path.basename(f.name)
-        txt_dict[file_name] = sentenceTokenizer(f.read())
+        txt_dict[file_name] = sentence_tokenizer(f.read())
         return txt_dict
 
     return to_dict
@@ -27,7 +27,7 @@ def read_file(file_path: str, cb: Callable) -> Any:
         return cb(f)
 
 
-def work_on_files(folder_path: str, file_extension: str, work: Callable) -> Any:
+def do_work_on_files(folder_path: str, file_extension: str, work: Callable) -> Any:
     res = None
     for file_path in glob.glob(f"{folder_path}/**/*.{file_extension}"):
         res = read_file(file_path, work)
@@ -35,19 +35,24 @@ def work_on_files(folder_path: str, file_extension: str, work: Callable) -> Any:
 
 
 # language processing
-def removeNonAlpha(string: str):
-    return re.sub(r"([^a-zA-Z0-9\s|])", "", string)
+def remove_non_alpha_num(string: str, exclude: str = "", replace: str = " ") -> str:
+    if exclude == "":
+        reg = r"[^a-zA-Z0-9\s|]"
+    else:
+        reg = r"(?!{})[^a-zA-Z0-9\s|]".format(exclude)
+
+    return re.sub(reg, replace, string)
 
 
-def sentenceTokenizer(text: str):
+def sentence_tokenizer(text: str) -> list:
     return re.findall(r"[A-Z0-9].*?[\.!?]", text, re.DOTALL)
 
 
 # could use CountVectorizer, this one is probably a simpler solution
 def word_tokenizer(sentence: str, stopwords: list) -> list:
-    split_sentence = re.split(r"\s+|'", sentence)
+    sentence = remove_non_alpha_num(sentence)
+    split_sentence = sentence.split()
     split_sentence = [word.lower() for word in split_sentence]
-    split_sentence = [removeNonAlpha(word) for word in split_sentence]
     split_sentence = [word for word in split_sentence if word not in stopwords]
     return split_sentence
 
@@ -67,7 +72,7 @@ class TopCounts:
             self.count_len = len(self.count_dict.keys())
         else:
             if count > self.count_dict[self.min_item]:
-                # if new item, delete old min item
+                # if new item comes in, delete old min item
                 if not self.count_dict.get(item):
                     del self.count_dict[self.min_item]
                 self.count_dict[item] = count
@@ -105,7 +110,7 @@ def make_dataframe(top_counts_dict: dict, no_sentences: int):
             if pd.notnull(val):
                 doc = row.index[idx]
                 selected = count_dict[doc][row.name]["sentences"][:no_sentences]
-                # combine for each document
+                # concat for each document
                 selected_str = selected_str + "".join(
                     [sentence + f" [{doc}]\n" for sentence in selected]
                 )
@@ -118,16 +123,15 @@ def make_dataframe(top_counts_dict: dict, no_sentences: int):
     return df
 
 
-# needs a more extensive list, added some for this excercise
+# needs a more extensive list, added a few words that match example files
 stopwords = nltk.corpus.stopwords.words("english")
-stopwords = stopwords + ["", "us", "many", "one", "let", "would", "u"]
+stopwords = stopwords + ["us", "many", "one", "let", "would", "u"]
 docs_dir = "downloads"
-
 
 top_counts = 5
 no_sentences = 3
 
-txts_dict = work_on_files(docs_dir, "txt", _make_dict())
+txts_dict = do_work_on_files(docs_dir, "txt", _make_dict())
 count_dict = process_text(txts_dict, top_counts, stopwords)
 df = make_dataframe(count_dict["top_counts"], no_sentences)
 df.sort_values(["Count"], ascending=False, inplace=True)
