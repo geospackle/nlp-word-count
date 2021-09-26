@@ -10,15 +10,27 @@ import pandas as pd
 nltk.download("stopwords")
 
 
+def _make_dict():
+    txt_dict = {}
+
+    def to_dict(f) -> dict:
+        nonlocal txt_dict
+        file_name = os.path.basename(f.name)
+        txt_dict[file_name] = sentenceTokenizer(f.read())
+        return txt_dict
+
+    return to_dict
+
+
 def read_file(file_path: str, cb: Callable) -> Any:
     with open(file_path, "r") as f:
-        return cb(file_path, f)
+        return cb(f)
 
 
-def work_on_files(folder_path: str, file_extension: str, cb: Callable) -> Any:
+def work_on_files(folder_path: str, file_extension: str, work: Callable) -> Any:
     res = None
     for file_path in glob.glob(f"{folder_path}/**/*.{file_extension}"):
-        res = read_file(file_path, cb)
+        res = read_file(file_path, work)
     return res
 
 
@@ -110,20 +122,11 @@ stopwords = stopwords + ["", "us", "many", "one", "let", "would", "u"]
 docs_dir = "downloads"
 
 
-def make_dict():
-    txt_dict = {}
+top_counts = 5
+no_sentences = 3
 
-    def to_dict(file_path, f) -> dict:
-        nonlocal txt_dict
-        file_name = os.path.basename(file_path)
-        txt_dict[file_name] = sentenceTokenizer(f.read())
-        return txt_dict
-
-    return to_dict
-
-
-txts_dict = work_on_files(docs_dir, "txt", make_dict())
-count_dict = process_text(txts_dict, 5, stopwords)
-df = make_dataframe(count_dict["top_counts"], 3)
+txts_dict = work_on_files(docs_dir, "txt", _make_dict())
+count_dict = process_text(txts_dict, top_counts, stopwords)
+df = make_dataframe(count_dict["top_counts"], no_sentences)
 df.sort_values(["Count"], ascending=False, inplace=True)
 df.to_csv("results.csv")
