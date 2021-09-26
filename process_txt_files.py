@@ -1,4 +1,3 @@
-# most common total words sentences and documents for each
 from typing import Callable, Any
 from collections import Counter
 import os
@@ -10,6 +9,7 @@ import pandas as pd
 nltk.download("stopwords")
 
 
+# files to dictionary
 def _make_dict():
     txt_dict = {}
 
@@ -34,6 +34,7 @@ def work_on_files(folder_path: str, file_extension: str, work: Callable) -> Any:
     return res
 
 
+# language processing
 def removeNonAlpha(string: str):
     return re.sub(r"([^a-zA-Z0-9\s|])", "", string)
 
@@ -51,6 +52,7 @@ def word_tokenizer(sentence: str, stopwords: list) -> list:
     return split_sentence
 
 
+# data processing and export
 class TopCounts:
     def __init__(self, max_elements: int):
         self.max_elements = max_elements
