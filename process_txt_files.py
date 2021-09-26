@@ -9,7 +9,9 @@ import pandas as pd
 nltk.download("stopwords")
 
 
-# make dictionary of files
+## make dictionary of files
+
+
 def _make_dict():
     txt_dict = {}
 
@@ -34,7 +36,9 @@ def do_work_on_files(folder_path: str, file_extension: str, work: Callable) -> A
     return res
 
 
-# language processing
+## language processing
+
+
 def remove_non_alpha_num(string: str, exclude: str = "", replace: str = " ") -> str:
     if exclude == "":
         reg = r"[^a-zA-Z0-9\s|]"
@@ -58,6 +62,8 @@ def word_tokenizer(sentence: str, stopwords: list) -> list:
 
 
 # data processing and export
+
+
 class TopCounts:
     def __init__(self, max_elements: int):
         self.max_elements = max_elements
@@ -79,6 +85,7 @@ class TopCounts:
                 self.min_item = min(self.count_dict, key=self.count_dict.get)
 
 
+# makes redundant dictionary for counts
 def process_text(txts_dict: dict, no_top_counts: int, stopwords: list) -> dict:
     count_dict = {}
     count_dict["top_counts"] = {}
@@ -101,6 +108,7 @@ def process_text(txts_dict: dict, no_top_counts: int, stopwords: list) -> dict:
     return count_dict
 
 
+# needed to access column names -> iterrows
 def make_dataframe(top_counts_dict: dict, no_sentences: int):
     df = pd.DataFrame(top_counts_dict)
     sentences = []
@@ -128,6 +136,7 @@ stopwords = nltk.corpus.stopwords.words("english")
 stopwords = stopwords + ["us", "many", "one", "let", "would", "u"]
 docs_dir = "downloads"
 
+# number of results
 top_counts = 5
 no_sentences = 3
 
