@@ -39,7 +39,7 @@ def do_work_on_files(folder_path: str, file_extension: str, work: Callable) -> A
 ## language processing
 
 
-def remove_non_alpha_num(string: str, exclude: str = "", replace: str = " ") -> str:
+def remove_non_alpha_num(string: str, replace: str = " ", exclude: str = "") -> str:
     if exclude == "":
         reg = r"[^a-zA-Z0-9\s|]"
     else:
